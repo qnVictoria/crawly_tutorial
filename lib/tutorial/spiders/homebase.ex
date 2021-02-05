@@ -1,6 +1,8 @@
 defmodule Homebase do
   use Crawly.Spider
 
+  @image_folder Application.get_env(:crawly, :image_folder)
+
   @impl Crawly.Spider
   def base_url(), do: "https://www.homebase.co.uk"
 
@@ -52,7 +54,8 @@ defmodule Homebase do
 
   defp product_sku(document) do
     document
-    |> Floki.find(".product-header-heading span")
+    |> Floki.find(".product-header-heading span.product-in")
+    |> Floki.attribute("content")
     |> Floki.text()
   end
 
@@ -75,7 +78,7 @@ defmodule Homebase do
   defp do_product_image([link|_]) do
     %HTTPoison.Response{body: body} = HTTPoison.get!(link)
 
-    local_file_link = "/tmp/homebase_" <> Path.basename(link)
+    local_file_link = @image_folder <> "/" <> Path.basename(link)
 
     File.write!(local_file_link, body)
     local_file_link
